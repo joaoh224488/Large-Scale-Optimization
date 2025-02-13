@@ -6,3 +6,4 @@
 
 ### Ferramentas
 * https://docs.scipy.org/doc/scipy/
+* https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.linprog.html
