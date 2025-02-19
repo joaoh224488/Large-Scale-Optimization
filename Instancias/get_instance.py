@@ -1,19 +1,16 @@
 import os
 import requests
-import logging
 from bs4 import BeautifulSoup
 
-class get_data():
+class MPSDownloader:
+    def __init__(self, url, save_dir):
+        self.url = url
+        self.save_dir = save_dir
+        self.base_url = 'https://github.com'
+        self.url_raw = "https://raw.githubusercontent.com/ozy4dm/lp-data-netlib/main/mps_files/"
+        self.mps_links = []
 
-    def __init__(self):
-        
-        # URL da página a ser analisada
-        self.url = 'https://netlib.org/lp/data/index.html'
-        self.save_dir = "Instancias"
-
-
-    def save_data(self):
-
+    def fetch_mps_links(self):
         # Realiza a requisição HTTP para obter o conteúdo da página
         response = requests.get(self.url)
         response.raise_for_status()  # Verifica se a requisição foi bem-sucedida
@@ -21,47 +18,34 @@ class get_data():
         # Analisa o conteúdo HTML da página
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        # Encontra todas as tags <a> com o atributo href
+        # Encontra todas as tags <a> com o atributo href que contêm links para arquivos .mps
         links = soup.find_all('a', href=True)
+        self.mps_links = [self.base_url + link['href'] for link in links if link['href'].endswith('.mps')]
 
-        # Itera sobre os links encontrados
-        for link in links:
-            href = link['href']
-            # Verifica se o href é um link relativo
-            if not href.startswith('http'):
-                href = os.path.join(os.path.dirname(self.url), href)
+    def download_files(self):
+        # Obtém o nome do arquivo a partir do link
+        filenames = [os.path.basename(link) for link in self.mps_links]
 
-            logging.info("Atual href:\t",href)
-            # Obtém o nome do arquivo a partir do link
-            filename = os.path.basename(href)
+        for filename in filenames:
+            response = requests.get(self.url_raw + filename)
 
+            if response.status_code == 200:
+                # Salvar o conteúdo do arquivo
+                with open(os.path.join(self.save_dir, filename), 'wb') as file:
+                    file.write(response.content)
+                print(f"Arquivo {filename} baixado com sucesso.")
+            else:
+                print(f"Falha ao baixar {filename}: {response.status_code}")
 
-
-            # Realiza a requisição para baixar o conteúdo do link
-            file_response = requests.get(href)
-            file_response.raise_for_status()
-
-
-            # Define o diretório de destino
-            
-            os.makedirs(self.save_dir, exist_ok=True)  # Cria o diretório se não existir
-
-            # Garante que o arquivo tenha a extensão .mps
-            if not filename.endswith(".mps"):
-                
-                filename = filename.split(".")[0]
-                filename += ".mps"
-
-            # Salva o conteúdo no arquivo correspondente dentro de /instancias
-            file_path = os.path.join(self.save_dir, filename)
-            with open(file_path, 'wb') as file:
-                file.write(file_response.content)
-            print(f'Arquivo {file_path} salvo com sucesso.')
+    def run(self):
+        self.fetch_mps_links()
+        self.download_files()
 
 
+# Uso da classe
 if __name__ == "__main__":
-
-    logging.info("INIT SAVE DATA")
-    d = get_data()
-    d.save_data()
-    logging.info("END SAVE DATA")
+    url = 'https://github.com/ozy4dm/lp-data-netlib/tree/main/mps_files'
+    save_dir = "Instancias"
+    
+    downloader = MPSDownloader(url, save_dir)
+    downloader.run()
