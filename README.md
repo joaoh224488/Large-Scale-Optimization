@@ -19,3 +19,13 @@
 
 #### Modelagem 
 * http://www.pyomo.org/
+
+
+
+### Instruções para rodar projeto:
+
+1. git clone https://github.com/joaoh224488/Large-Scale-Optimization.git
+2. cd Large-Scale-Optimization
+3. streamlit run Interface.py
+4. Entre na guia aberta no navegador
+5. selecione o arquivo do problema contido na pasta Instancias e espere a solução!
