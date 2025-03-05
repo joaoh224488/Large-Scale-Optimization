@@ -38,9 +38,21 @@ class linprog_solver:
             print(f"Número de iterações: {self.res.nit}")
         except Exception as e:
             raise Exception(f"Erro ao imprimir resultados: {e}")
+        
+    def get_results(self):
+        try:
+            return {
+                "status": self.res.message,
+                "objective_value": self.res.fun,
+                "success": self.res.success,
+                "iterations": self.res.nit
+            }
+        except Exception as e:
+            logging.error(f"Erro ao obter resultados: {e}")
+            return None
 
 def main():
-    ls = linprog_solver("/home/vaio/ufpb/Large-Scale-Optimization/Instancias/25fv47.mps")
+    ls = linprog_solver("/home/vaio/ufpb/Large-Scale-Optimization/Instancias/wood1p.mps")
     ls.run()
     ls.print_results()
 

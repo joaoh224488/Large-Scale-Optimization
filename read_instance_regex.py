@@ -1,5 +1,6 @@
 import re
 import numpy as np
+import logging
 
 class MPSParser:
     def __init__(self, file_path):
@@ -55,7 +56,7 @@ class MPSParser:
                         self.A[col_name][row_name2] = value2
         return self.A
     
-    def extract_rhs(self):
+    def extract_rhs_in(self):
         with open(self.file_path, 'r') as file:
             lines = file.readlines()
             start = lines.index("RHS\n") + 1
@@ -74,6 +75,31 @@ class MPSParser:
                         self.rhs[row_name2] = value2
         return self.rhs
     
+    def extract_rhs(self):
+        with open(self.file_path, 'r') as file:
+            lines = file.readlines()
+            start = lines.index("RHS\n") + 1
+            end = lines.index("ENDATA\n")
+            
+            for line in lines[start:end]:
+                parts = line.split()
+                if len(parts) >= 3:
+                    try:
+                        _, row_name, value = parts[:3]
+                        value = float(value)  # Tentar converter para float
+                        self.rhs[row_name] = value
+                        
+                        if len(parts) == 5:
+                            row_name2, value2 = parts[3:]
+                            value2 = float(value2)  # Tentar converter para float
+                            self.rhs[row_name2] = value2
+                    except ValueError:
+                        # Ignorar valores que não podem ser convertidos para float
+                        logging.warning(f"Valor inválido na linha RHS: {line.strip()}")
+                        continue
+        return self.rhs
+
+
     def extract_bounds(self):
         with open(self.file_path, 'r') as file:
             lines = file.readlines()
