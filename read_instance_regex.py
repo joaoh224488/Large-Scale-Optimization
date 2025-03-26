@@ -1,6 +1,7 @@
 import re
 import numpy as np
 import logging
+import sys
 
 class MPSParser:
     def __init__(self, file_path):
@@ -185,15 +186,32 @@ class MPSParser:
             "variables": variables
         }
 
+def main():
+    # Verifica se um arquivo foi passado como argumento
+    if len(sys.argv) < 2:
+        print("Exemplo de uso: python *seu_codigo*.py *seu arquivo*.mps")
+        sys.exit(1)  # Encerra o programa se nenhum arquivo for fornecido
+
+    # Obtém o caminho do arquivo do primeiro argumento
+    mps_file = sys.argv[1]
+
+    try:
+        # Cria o parser e processa o arquivo
+        parser = MPSParser(mps_file)
+        data = parser.parse()
+
+        # Exibe os resultados
+        print("Coeficientes da função objetivo (c):", data["c"])
+        print("Matriz de restrições de desigualdade (A_ub):", data["A_ub"])
+        print("Vetor do lado direito das restrições de desigualdade (b_ub):", data["b_ub"])
+        print("Matriz de restrições de igualdade (A_eq):", data["A_eq"])
+        print("Vetor do lado direito das restrições de igualdade (b_eq):", data["b_eq"])
+        print("Limites das variáveis (bounds):", data["bounds"])
+        print("Variáveis:", data["variables"])
+    except FileNotFoundError:
+        print(f"Erro: Arquivo '{mps_file}' não encontrado.")
+    except Exception as e:
+        print(f"Erro ao processar o arquivo: {e}")
+
 if __name__ == "__main__":
-    # Exemplo de uso:
-    parser = MPSParser("/home/vaio/ufpb/Large-Scale-Optimization/Instancias/25fv47.mps")
-    data = parser.parse()
-    
-    print("Coeficientes da função objetivo (c):", data["c"])
-    print("Matriz de restrições de desigualdade (A_ub):", data["A_ub"])
-    print("Vetor do lado direito das restrições de desigualdade (b_ub):", data["b_ub"])
-    print("Matriz de restrições de igualdade (A_eq):", data["A_eq"])
-    print("Vetor do lado direito das restrições de igualdade (b_eq):", data["b_eq"])
-    print("Limites das variáveis (bounds):", data["bounds"])
-    print("Variáveis:", data["variables"])
+    main()
