@@ -1,31 +1,66 @@
-# Trabalho final da disciplina de Otimização de Grande Porte
+# Large-Scale Optimization Solver
 
-### Instâncias para problemas de Grande Porte - Linear
+Este projeto implementa um solver de Programação Linear (LP) que lê arquivos no formato **MPS**, resolve o problema usando métodos de otimização e exibe os resultados em uma interface web (Streamlit).
 
-* https://netlib.org/lp/data/
+---
 
-### Ferramentas
-* https://docs.scipy.org/doc/scipy/
-* https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.linprog.html
+## 📋 Pré-requisitos
+- Python 3.8+
+- Bibliotecas: `streamlit`, `numpy`, `scipy`, `regex`
+- (Opcional) Ambiente virtual (`venv` ou `conda`)
 
-#### Solver para otimização linear de larga escala
-*  https://pypi.org/project/highspy/
-* https://ergo-code.github.io/HiGHS/dev/interfaces/python/
+---
 
+## 🚀 Instalação
 
-#### Otimizador de pontos interiores
-* https://pypi.org/project/ipopt/
-* https://mdolab-pyoptsparse.readthedocs-hosted.com/en/latest/optimizers/IPOPT.html
+1. **Clone o repositório**:
+   ```bash
+   git clone https://github.com/joaoh224488/Large-Scale-Optimization.git
+   cd Large-Scale-Optimization
+   ```
 
-#### Modelagem 
-* http://www.pyomo.org/
+2. **Instale as dependências**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
+---
 
+## 🖥️ Interface Gráfica (Streamlit)
 
-### Instruções para rodar projeto:
+Execute o solver via navegador:
+```bash
+streamlit run Interface.py
+```
+**Passos**:
+1. Acesse a URL exibida no terminal (geralmente `http://localhost:8501`).
+2. Selecione um arquivo `.mps` da pasta `Instancias/`.
+3. Aguarde a solução do problema.
+4. Veja os resultados na tela (status, valor objetivo, iterações, etc.).
 
-1. git clone https://github.com/joaoh224488/Large-Scale-Optimization.git
-2. cd Large-Scale-Optimization
-3. streamlit run Interface.py
-4. Entre na guia aberta no navegador
-5. selecione o arquivo do problema contido na pasta Instancias e espere a solução!
+---
+
+## 🛠️ Ferramentas
+
+### Biblioteca para Computação Científica
+- [SciPy](https://docs.scipy.org/doc/scipy/)  
+  Método `linprog`: [scipy.optimize.linprog](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.linprog.html)
+
+### Solver para Otimização Linear de Larga Escala
+- [HiGHS](https://pypi.org/project/highspy/)  
+  Documentação: [HiGHS Python Interface](https://ergo-code.github.io/HiGHS/dev/interfaces/python/)
+
+### Otimizador de Pontos Interiores
+- [IPOPT](https://pypi.org/project/ipopt/)  
+  Guia de uso: [PyOptSparse/IPOPT](https://mdolab-pyoptsparse.readthedocs-hosted.com/en/latest/optimizers/IPOPT.html)
+
+### Modelagem de Problemas de Otimização
+- [Pyomo](http://www.pyomo.org/)  
+
+---
+
+## Equipe
+
+*  Integrantes da Equipe
+
+---
