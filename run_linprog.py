@@ -2,6 +2,7 @@ from read_instance_regex import MPSParser
 from scipy.optimize import linprog
 import numpy as np
 import logging
+import sys
 
 class linprog_solver:
     def __init__(self, instance_path):
@@ -36,6 +37,7 @@ class linprog_solver:
             print(f"Valor objetivo: {self.res.fun}")
             print(f"Sucesso: {self.res.success}")
             print(f"Número de iterações: {self.res.nit}")
+            
         except Exception as e:
             raise Exception(f"Erro ao imprimir resultados: {e}")
         
@@ -45,16 +47,29 @@ class linprog_solver:
                 "status": self.res.message,
                 "objective_value": self.res.fun,
                 "success": self.res.success,
-                "iterations": self.res.nit
+                "iterations": self.res.nit,
             }
         except Exception as e:
             logging.error(f"Erro ao obter resultados: {e}")
             return None
 
 def main():
-    ls = linprog_solver("/home/vaio/ufpb/Large-Scale-Optimization/Instancias/wood1p.mps")
-    ls.run()
-    ls.print_results()
+    if len(sys.argv) < 2:
+        print("Exemplo de uso: python *seu_codigo*.py *seu arquivo*.mps")
+        sys.exit(1)
+    
+    mps_file = sys.argv[1]
+
+    try:
+        ls = linprog_solver(mps_file)
+        ls.run()
+        ls.print_results()
+
+    except FileNotFoundError:
+        print(f"Erro: Arquivo '{mps_file}' não encontrado.")
+
+    except Exception as e:
+        print(f"Erro ao processar o arquivo: {e}")
 
 if __name__ == "__main__":
     main()
