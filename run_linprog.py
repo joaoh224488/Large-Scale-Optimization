@@ -12,7 +12,7 @@ class linprog_solver:
         self.res = None
 
     def run(self):
-        print(f"Keys do objeto data: {self.data.keys()}")
+        #print(f"Keys do objeto data: {self.data.keys()}")
         
         # Extrair os dados diretamente do parser
         c = self.data["c"]
@@ -37,7 +37,7 @@ class linprog_solver:
             print(f"Valor objetivo: {self.res.fun}")
             print(f"Sucesso: {self.res.success}")
             print(f"Número de iterações: {self.res.nit}")
-            
+
         except Exception as e:
             raise Exception(f"Erro ao imprimir resultados: {e}")
         
@@ -49,6 +49,7 @@ class linprog_solver:
                 "success": self.res.success,
                 "iterations": self.res.nit,
             }
+        
         except Exception as e:
             logging.error(f"Erro ao obter resultados: {e}")
             return None
