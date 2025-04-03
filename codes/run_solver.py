@@ -4,7 +4,7 @@ import highspy
 
 from highspy import Highs
 from scipy.optimize import linprog
-from read_instance_regex import MPSParser
+from codes.read_instance_regex import MPSParser
 
 class HighsSolver:
     def __init__(self, instance_path):
@@ -111,7 +111,6 @@ class LinprogSolver:
         except Exception as e:
             logging.error(f"Erro ao obter resultados: {e}")
             return None
-
 
 def main():
     if len(sys.argv) < 3:
