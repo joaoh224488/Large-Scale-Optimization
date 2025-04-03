@@ -4,7 +4,56 @@ import logging
 import sys
 
 class MPSParser:
+
+    """
+
+    
+
+    Classe para fazer parsing de arquivos no formato MPS (Mathematical Programming System).
+    O formato MPS é um formato padrão da indústria para representar problemas de programação linear.
+
+    Atributos:
+        file_path (str): Caminho para o arquivo MPS a ser processado
+        name (str): Nome do problema extraído do arquivo
+        rows (list): Lista de tuplas (tipo, nome) representando as restrições
+        objective_row (str): Nome da linha que representa a função objetivo
+        A (dict): Dicionário para armazenar os coeficientes da matriz de restrições
+        rhs (dict): Dicionário para armazenar os valores do lado direito das restrições
+        bounds (dict): Dicionário para armazenar os limites das variáveis
+
+    Métodos:
+        extract_name(): Extrai o nome do problema do arquivo MPS
+        extract_rows(): Extrai as informações da seção ROWS
+        extract_columns(): Extrai os coeficientes da matriz de restrições
+        extract_rhs(): Extrai os valores do lado direito das restrições
+        extract_bounds(): Extrai os limites das variáveis
+        parse(): Executa todo o processo de parsing do arquivo
+
+    
+    
+    """
+
+
+
     def __init__(self, file_path):
+
+        """
+        Inicializa um novo parser MPS.
+
+        Args:
+            file_path (str): Caminho para o arquivo MPS a ser processado.
+
+        Atributos inicializados:
+            file_path (str): Caminho do arquivo
+            name (str): Nome do problema (inicialmente vazio)
+            rows (list): Lista de restrições (inicialmente vazia) 
+            objective_row (str): Nome da função objetivo (inicialmente None)
+            A (dict): Matriz de coeficientes (inicialmente vazio)
+            rhs (dict): Valores do lado direito (inicialmente vazio)
+            bounds (dict): Limites das variáveis (inicialmente vazio)
+        """
+
+
         self.file_path = file_path
         self.name = ""
         self.rows = []
@@ -14,6 +63,17 @@ class MPSParser:
         self.bounds = {}
     
     def extract_name(self):
+        
+        """
+        Extrai o nome do problema do arquivo MPS.
+
+        O nome é encontrado na primeira linha do arquivo que começa com "NAME".
+        O formato esperado é "NAME [nome_do_problema]".
+
+        Returns:
+            str: Nome do problema extraído do arquivo
+        """
+
         with open(self.file_path, 'r') as file:
             for line in file:
                 if line.startswith("NAME"):
@@ -22,6 +82,24 @@ class MPSParser:
         return self.name
     
     def extract_rows(self):
+
+        """
+        Extrai as informações da seção ROWS do arquivo MPS.
+
+        A seção ROWS contém os tipos e nomes das restrições.
+        Cada linha tem o formato "[tipo] [nome]" onde:
+        - tipo pode ser:
+            N: função objetivo
+            E: restrição de igualdade (=)
+            L: restrição menor ou igual (<=) 
+            G: restrição maior ou igual (>=)
+        - nome é o identificador da restrição
+
+        Returns:
+            list: Lista de tuplas (tipo, nome) para cada restrição
+        """
+
+
         with open(self.file_path, 'r') as file:
             lines = file.readlines()
             start = lines.index("ROWS\n") + 1
@@ -37,6 +115,24 @@ class MPSParser:
         return self.rows
     
     def extract_columns(self):
+
+        """
+        Extrai as informações da seção COLUMNS do arquivo MPS.
+
+        A seção COLUMNS contém os coeficientes da matriz A do problema.
+        Cada linha tem o formato "[nome_coluna] [nome_linha] [valor]" ou
+        "[nome_coluna] [nome_linha1] [valor1] [nome_linha2] [valor2]" onde:
+        - nome_coluna: nome da variável
+        - nome_linha: nome da restrição 
+        - valor: coeficiente da variável na restrição
+
+        Returns:
+            dict: Dicionário com os coeficientes da matriz A, onde:
+                 - chave externa é o nome da coluna (variável)
+                 - chave interna é o nome da linha (restrição)
+                 - valor é o coeficiente
+        """
+
         with open(self.file_path, 'r') as file:
             lines = file.readlines()
             start = lines.index("COLUMNS\n") + 1
@@ -58,6 +154,10 @@ class MPSParser:
         return self.A
     
     def extract_rhs_in(self):
+
+
+
+        
         with open(self.file_path, 'r') as file:
             lines = file.readlines()
             start = lines.index("RHS\n") + 1
@@ -66,8 +166,11 @@ class MPSParser:
             for line in lines[start:end]:
                 parts = line.split()
                 if len(parts) >= 3:
+                    # Extrai o nome da linha e o valor, ignorando o primeiro elemento
                     _, row_name, value = parts[:3]
+                    # Converte o valor para float
                     value = float(value)
+                    # Armazena o valor no dicionário rhs usando o nome da linha como chave
                     self.rhs[row_name] = value
                     
                     if len(parts) == 5:
