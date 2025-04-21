@@ -13,3 +13,4 @@ pip-delete-this-directory.txt
 .git/
 
 testes.ipynb
+log
