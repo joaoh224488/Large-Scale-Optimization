@@ -228,6 +228,8 @@ class LinprogSolver:
         except Exception as e:
             logging.error(f"Erro ao obter resultados: {e}")
             return None
+        
+
 def main():
     if len(sys.argv) < 3:
         print("Uso: python run_solver.py -h|-l arquivo.mps")
