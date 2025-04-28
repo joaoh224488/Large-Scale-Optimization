@@ -1,6 +1,7 @@
 import streamlit as st
 from codes.read_instance_regex import MPSParser
-from codes.run_solver import LinprogSolver, HighsSolver
+from codes.Solvers.Linprog_solver import LinprogSolver
+from codes.Solvers.HighsSolver import HighsSolver
 import tempfile
 import os
 import time
