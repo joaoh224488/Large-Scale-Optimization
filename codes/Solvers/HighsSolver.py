@@ -19,10 +19,11 @@ class HighsSolver:
             # Carregar o modelo a partir do arquivo MPS
             status = self.model.readModel(self.instance_path)
             
-            if status != highspy.HighsStatus.kOk:
+            if status != hs.HighsStatus.kOk:
                 raise Exception("Erro ao carregar o modelo MPS.")
             
             # Resolver o problema de otimização
+            self.start_time = pc()
             self.model.run()
             self.res = self.model.getSolution()
         
