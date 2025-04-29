@@ -53,11 +53,15 @@ def main_page() -> None:
 
 # Exibe os resultados de otimização na tela
 def display_results(results: Dict[str, Any]) -> None:
-    st.write(f"**Status:** {results['status']}")
-    st.write(f"**Valor objetivo:** {results['objective_value']}")
-    st.write(f"**Sucesso:** {results['success']}")
-    st.write(f"**Número de iterações:** {results['iterations']}")
-
+    st.write(f"**MODEL NAME:** {results['MODEL NAME']}")
+    st.write(f"**STATUS:** {results['STATUS']}")
+    st.write(f"**VALOR ÓTIMO PRIMAL:** {results['VALOR ÓTIMO PRIMAL']}")
+    st.write(f"**VALOR ÓTIMO DUAL:** {results['VALOR ÓTIMO DUAL']}")
+    st.write(f"**GAP:** {results['GAP']}")
+    st.write(f"**INVIABILIDADE PRIMAL:** {results['INVIABILIDADE PRIMAL']}")
+    st.write(f"**INVIABILIDADE DUAL:** {results['INVIABILIDADE DUAL']}")
+    st.write(f"**ITERAÇÕES:** {results['ITERAÇÕES']}")
+    st.write(f"**TEMPO(SEG.):** {results['TEMPO(SEG.)']}")
 
 # Página de resultados: recebe o arquivo MPS, processa a otimização e exibe os resultados
 def results_page() -> None:
