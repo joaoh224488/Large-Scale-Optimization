@@ -2,6 +2,7 @@ import os
 import time
 import tempfile
 import streamlit as st
+import pandas as pd
 
 from typing import Optional, Dict, Any
 from codes.Solvers.HighsSolver import HighsSolver
@@ -62,6 +63,9 @@ def display_results(results: Dict[str, Any]) -> None:
     st.write(f"**INVIABILIDADE DUAL:** {results['INVIABILIDADE DUAL']}")
     st.write(f"**ITERAÇÕES:** {results['ITERAÇÕES']}")
     st.write(f"**TEMPO(SEG.):** {results['TEMPO(SEG.)']}")
+
+	st.table(results['Df1'])
+	st.table(results['Df2'])
 
 # Página de resultados: recebe o arquivo MPS, processa a otimização e exibe os resultados
 def results_page() -> None:
