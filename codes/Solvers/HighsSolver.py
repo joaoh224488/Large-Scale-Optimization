@@ -106,6 +106,23 @@ class HighsSolver:
                 dual_value = np.dot(b, dual_vars)
                 gap = primal_value - dual_value if (primal_value is not None and dual_value is not None) else None
             
+			var_names = lp_model.col_names_
+			restr_names = lp_model.row_names_  
+
+			table1_data = {
+			'VAR.': var_names,
+			'SOL. PRIMAL': solution.col_value,
+			'DUAL_PRICES': solution.col_dual # Custos reduzidos (associados às variáveis)
+			}
+			df1 = pd.DataFrame(table1_data)  
+			
+			table2_data = {
+			'RESTR.': restr_names,
+			'FOLGAS': solution.row_value,
+			'SOL. DUAL': solution.row_dual # Custos reduzidos (associados às variáveis)
+			}
+			df2 = pd.DataFrame(table2_data)
+			
             # Métricas de inviabilidade
             info = self.model.getInfo()
             
@@ -118,7 +135,9 @@ class HighsSolver:
                 "INVIABILIDADE PRIMAL": f"{info.sum_primal_infeasibilities:e}",
                 "INVIABILIDADE DUAL": f"{info.sum_dual_infeasibilities:e}",
                 "ITERAÇÕES": info.simplex_iteration_count,
-                "TEMPO(SEG.)": pc() - self.start_time
+                "TEMPO(SEG.)": pc() - self.start_time,
+				"Df1": df1,
+				"Df2": df2
             }
         
         except Exception as e:
