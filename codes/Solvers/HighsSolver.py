@@ -13,6 +13,7 @@ class HighsSolver:
     def __init__(self, instance_path):
         self.instance_path = instance_path
         self.model = Highs()
+        self.model.setOptionValue("solver", "ipm")
         self.res = None
 
     # Recebe o caminho para o arquivo MPS, lê o arquivo, executa o solver e armazena o resultado
@@ -134,7 +135,7 @@ class HighsSolver:
                 "GAP": f"{gap:e}" if gap is not None else "N/A",
                 "INVIABILIDADE PRIMAL": f"{info.sum_primal_infeasibilities:e}",
                 "INVIABILIDADE DUAL": f"{info.sum_dual_infeasibilities:e}",
-                "ITERAÇÕES": info.simplex_iteration_count,
+                "ITERAÇÕES": info.ipm_iteration_count,
                 "TEMPO(SEG.)": pc() - self.start_time,
                 "Df1": df1.set_index('VAR.'),
                 "Df2": df2.set_index('RESTR.')
