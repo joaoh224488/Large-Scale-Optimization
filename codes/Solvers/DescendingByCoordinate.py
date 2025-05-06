@@ -2,6 +2,7 @@ import re
 import os
 import time
 import random
+import pandas as pd
 import numpy as np
 import logging
 from scipy.sparse import csc_matrix
@@ -348,13 +349,68 @@ class CoordinateDescent:
 
     def get_results(self):
         """
-        Retorna os resultados em formato de dicionário.
+        Retorna os resultados detalhados da otimização em formato de dicionário.
         
         Returns:
-            dict: Dicionário com os resultados de todos os métodos executados
-            None: Se nenhum resultado estiver disponível
+            dict: Dicionário contendo:
+                - Para cada método (CCD, RCD, MDCD):
+                    - "SOLUCAO_X": Vetor solução encontrado
+                    - "VALOR_OBJETIVO": Valor da função objetivo na solução
+                    - "ITERACOES": Número de iterações realizadas
+                    - "TEMPO (s)": Tempo de execução em segundos
+                    - "NORM_GRADIENTE": Norma do gradiente na solução (medida de convergência)
+                - "MELHOR_METODO": Nome do método com menor valor objetivo
+                - "COMPARACAO": DataFrame comparando os métodos
+                None: Se nenhum resultado estiver disponível
         """
-        return self.results if self.results else None
+        if not self.results:
+            return None
+        
+        try:
+            # Calcula métricas adicionais para cada método
+            for method, res in self.results.items():
+                x = res['x']
+                r = self.A.dot(x) - self.b  # Residual
+                res['norm_grad'] = np.linalg.norm(self.A.T @ r)  # Norma do gradiente
+                res['norm_x'] = np.linalg.norm(x)  # Norma da solução
+            
+            # Identifica o melhor método (menor valor objetivo)
+            melhor_metodo = min(self.results.keys(), 
+                            key=lambda k: self.results[k]['f'])
+            
+            # Cria DataFrame comparativo
+            df_comparacao = pd.DataFrame({
+                'Método': list(self.results.keys()),
+                'Valor Objetivo': [res['f'] for res in self.results.values()],
+                'Iterações': [res['iter'] for res in self.results.values()],
+                'Tempo (s)': [res['time'] for res in self.results.values()],
+                'Norma do Gradiente': [res['norm_grad'] for res in self.results.values()],
+                'Norma da Solução': [res['norm_x'] for res in self.results.values()]
+            }).set_index('Método')
+            
+            # Organiza os resultados no formato de dicionário
+            resultados = {
+                "MELHOR_METODO": melhor_metodo.upper(),
+                "COMPARACAO": df_comparacao
+            }
+            
+            # Adiciona resultados detalhados por método
+            for method, res in self.results.items():
+                resultados[method.upper()] = {
+                    "SOLUCAO_X": res['x'],
+                    "VALOR_OBJETIVO": res['f'],
+                    "ITERACOES": res['iter'],
+                    "TEMPO (s)": res['time'],
+                    "NORM_GRADIENTE": res['norm_grad'],
+                    "NORM_SOLUCAO": res['norm_x']
+                }
+            
+            return resultados
+        
+        except Exception as e:
+            logging.error(f"Erro ao processar os resultados: {e}")
+            return None
+    
 
 
 def main():
