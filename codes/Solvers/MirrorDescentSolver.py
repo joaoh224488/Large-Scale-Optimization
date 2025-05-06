@@ -7,7 +7,7 @@ from typing import Tuple
 
 
 class MirrorDescentSolver:
-    def __init__(self, instance_path: str, eta=1e-1, epsilon=1e-4, max_iter=100000):
+    def __init__(self, instance_path: str, eta=1e-1, epsilon=1e-5, max_iter=100000):
         self.instance_path = instance_path
         self.eta = eta
         self.epsilon = epsilon
@@ -80,19 +80,27 @@ class MirrorDescentSolver:
         return np.sign(x) * (np.abs(x) ** (1 / (p-1)))
 
     def _grad_f(self, x):
-        return self.A.dot(x) - self.b
+        return self.A.T @ (self.A @ x -self.b)
+
+    def f(self, x:np.array):
+        return (1/2) * np.linalg.norm(self.A @ x - self.b)**2
 
     def mirror_gradient(self, x0, verbose=True):
         xt = x0.copy()
+
         for i in range(self.max_iter):
             grad_f = self._grad_f(xt)
+
             if np.linalg.norm(grad_f) <= self.epsilon:
                 break
+
             x_new = self._inv_grad_norma_p(
                 self._grad_norma_p(xt) - self.eta * grad_f
             )
+
             if np.linalg.norm(x_new - xt) < self.epsilon:
                 break
+
             xt = x_new
             if verbose:
                 print(np.linalg.norm(self._grad_f(xt)))
@@ -101,6 +109,7 @@ class MirrorDescentSolver:
     def run(self):
         try:
             self.A, self.b, self.x_star, self.solution_cost = self._read_instance()
+            
             x0 = np.ones_like(self.b)
 
             start = pc()
@@ -114,8 +123,8 @@ class MirrorDescentSolver:
         if self.solution is None:
             return None
         try:
-            obj_val = self._negativa_entropia(self.solution)
-            erro = np.linalg.norm(self.solution - self.x_star)
+            obj_val = self.f(self.solution)
+            erro = 100 * (obj_val - self.solution_cost) / (self.solution_cost) 
             df = pd.DataFrame({
                 'VAR': [f'x{i}' for i in range(len(self.solution))],
                 'VALOR': self.solution,
@@ -126,7 +135,7 @@ class MirrorDescentSolver:
             return {
                 "CUSTO OBJETIVO CALCULADO": obj_val,
                 "CUSTO OBJETIVO ESPERADO": self.solution_cost,
-                "ERRO ABSOLUTO TOTAL": erro,
+                "GAP COM RELAÇÃO AO OTIMO": erro,
                 "TEMPO (s)": self.time_taken,
                 "Df": df
             }

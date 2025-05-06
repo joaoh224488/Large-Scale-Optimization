@@ -67,7 +67,7 @@ def display_results(results: Dict[str, Any]) -> None:
         # Exibir resultados do MirrorDescentSolver
         st.write(f"**CUSTO OBJETIVO CALCULADO:** {results['CUSTO OBJETIVO CALCULADO']}")
         st.write(f"**CUSTO OBJETIVO ESPERADO:** {results['CUSTO OBJETIVO ESPERADO']}")
-        st.write(f"**ERRO ABSOLUTO TOTAL:** {results['ERRO ABSOLUTO TOTAL']}")
+        st.write(f"**GAP COM RELAÇÃO AO OTIMO:** {results['GAP COM RELAÇÃO AO OTIMO']}")
         st.write(f"**TEMPO (s):** {results['TEMPO (s)']}")
         st.write("**Comparação entre solução encontrada e solução ótima:**")
         st.table(results['Df'])
@@ -96,7 +96,7 @@ def results_page() -> None:
             if file_ext == ".mps":
                 solver = HighsSolver(file_path)
             elif file_ext == ".txt":
-                solver = MirrorDescentSolver(file_path, max_iter=100)
+                solver = MirrorDescentSolver(file_path, max_iter=10000)
             else:
                 raise ValueError("Formato de arquivo não suportado.")
 
