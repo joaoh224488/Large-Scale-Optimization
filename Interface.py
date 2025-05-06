@@ -86,13 +86,13 @@ def display_results(results: Dict[str, Any]) -> None:
         st.table(results['Df2'])
     else:
         # Exibir resultados do MirrorDescentSolver
+        st.write(f"**NORMA DO GRADIENTE:** {results['NORMA DO GRADIENTE']}")
         st.write(f"**CUSTO OBJETIVO CALCULADO:** {results['CUSTO OBJETIVO CALCULADO']}")
         st.write(f"**CUSTO OBJETIVO ESPERADO:** {results['CUSTO OBJETIVO ESPERADO']}")
-        st.write(f"**ERRO ABSOLUTO TOTAL:** {results['ERRO ABSOLUTO TOTAL']}")
+        st.write(f"**GAP COM RELAÇÃO AO OTIMO:** {results['GAP COM RELAÇÃO AO OTIMO']}")
         st.write(f"**TEMPO (s):** {results['TEMPO (s)']}")
         st.write("**Comparação entre solução encontrada e solução ótima:**")
         st.table(results['Df'])
-
 
 def results_page() -> None:
     st.set_page_config(page_title="Resultados", layout="centered")
