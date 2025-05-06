@@ -6,7 +6,6 @@ import streamlit as st
 from typing import Optional, Dict, Any
 from codes.Solvers.Highs import HighsSolver
 from codes.Solvers.MirrorDescentSolver import MirrorDescentSolver  # importe seu novo solver aqui
-from codes.Solvers.DescendingByCoordinate import CoordinateDescent
 
 
 def cleanup_temp_file(file_path: Optional[str]) -> None:
@@ -21,26 +20,7 @@ def main_page() -> None:
     st.set_page_config(page_title="Solver de PL", layout="centered")
     st.title("Solver de Problemas de Otimização")
 
-    st.session_state.function_type = st.selectbox(
-        "Selecione o tipo de função",
-        ["Linear", "Quadrática"]
-    )
-
-    type_arq = ''
-    methods = []
-    if st.session_state.function_type == "Linear":
-        type_arq = 'mps'
-        methods = ["HiGHS"]
-    else:
-        type_arq = 'txt'
-        methods = ["Descida por Coordenada", "Gradiente Espelhado"]
-    
-    st.session_state.method_selected = st.selectbox(
-        "Selecione o método de otimização",
-        methods
-    )
-
-    uploaded_file = st.file_uploader("Escolha um arquivo", type=type_arq)
+    uploaded_file = st.file_uploader("Escolha um arquivo", type=["mps", "txt"])
 
     if uploaded_file is not None:
         original_filename = uploaded_file.name
@@ -76,8 +56,7 @@ def display_results(results: Dict[str, Any]) -> None:
         st.write(f"**STATUS:** {results['STATUS']}")
         st.write(f"**VALOR ÓTIMO PRIMAL:** {results['VALOR ÓTIMO PRIMAL']}")
         st.write(f"**VALOR ÓTIMO DUAL:** {results['VALOR ÓTIMO DUAL']}")
-        st.write(f"**GAP ABSOLUTO:** {results['GAP ABSOLUTO']}")
-        st.write(f"**GAP RELATIVO:** {results['GAP RELATIVO']}")
+        st.write(f"**GAP:** {results['GAP']}")
         st.write(f"**INVIABILIDADE PRIMAL:** {results['INVIABILIDADE PRIMAL']}")
         st.write(f"**INVIABILIDADE DUAL:** {results['INVIABILIDADE DUAL']}")
         st.write(f"**ITERAÇÕES:** {results['ITERAÇÕES']}")
@@ -86,9 +65,10 @@ def display_results(results: Dict[str, Any]) -> None:
         st.table(results['Df2'])
     else:
         # Exibir resultados do MirrorDescentSolver
+        st.write(f"**NORMA DO GRADIENTE:** {results['NORMA DO GRADIENTE']}")
         st.write(f"**CUSTO OBJETIVO CALCULADO:** {results['CUSTO OBJETIVO CALCULADO']}")
         st.write(f"**CUSTO OBJETIVO ESPERADO:** {results['CUSTO OBJETIVO ESPERADO']}")
-        st.write(f"**ERRO ABSOLUTO TOTAL:** {results['ERRO ABSOLUTO TOTAL']}")
+        st.write(f"**GAP COM RELAÇÃO AO OTIMO:** {results['GAP COM RELAÇÃO AO OTIMO']}")
         st.write(f"**TEMPO (s):** {results['TEMPO (s)']}")
         st.write("**Comparação entre solução encontrada e solução ótima:**")
         st.table(results['Df'])
@@ -99,8 +79,7 @@ def results_page() -> None:
     st.title("Resultados da Otimização")
 
     file_path = st.session_state.get("file_path")
-    file_ext = st.session_state.get("file_ext")
-
+    
     if not file_path:
         st.error("Nenhum arquivo foi enviado.")
         if st.button("Voltar para o início"):
@@ -113,36 +92,54 @@ def results_page() -> None:
             st.write("Processando a otimização...")
             progress_bar = st.progress(0)
 
-            # "Descida por Coordenada", "Gradiente Espelhado"
-            # Escolhe o solver com base na extensão
-            if file_ext == ".mps":                
-                solver = HighsSolver(file_path)
+            # Seleção do solver independentemente da extensão do arquivo
+            solver_type = st.selectbox(
+                "Selecione o solver para otimização",
+                ["HighsSolver", "MirrorDescentSolver"],
+                key="solver_selection"
+            )
+
+
+
+            # Configurações específicas para MirrorDescentSolver
+            if solver_type == "MirrorDescentSolver":
+                versao = st.selectbox(
+                    "Escolha a versão do Mirror Descent",
+                    ["negativa_entropia", "norma_p"],
+                    key="mirror_version"
+                )
+                max_iter = st.number_input(
+                    "Número máximo de iterações",
+                    min_value=100,
+                    max_value=100000,
+                    value=10000,
+                    key="max_iter"
+                )
+
+            # Botão para confirmar e iniciar a otimização
+            if st.button("Iniciar Otimização"):
+                if solver_type == "HighsSolver":
+                    solver = HighsSolver(file_path)
+                elif solver_type == "MirrorDescentSolver":
+                    solver = MirrorDescentSolver(
+                        file_path,
+                        max_iter=max_iter,
+                        versao=versao
+                    )
+                else:
+                    raise ValueError("Solver não suportado.")
+
+                # Simulação de progresso
+                for i in range(1, 101):
+                    time.sleep(0.01)
+                    progress_bar.progress(i)
+
                 solver.run()
                 results = solver.get_results()
 
-            elif file_ext == ".txt":
-                if st.session_state.method_selected == "Gradiente Espelhado":
-                
-                    solver = MirrorDescentSolver(file_path, max_iter=100)
-                    solver.run()
-                    results = solver.get_results()
-
-                if st.session_state.method_selected == "Descida por Coordenada":
-
-                    solver = CoordinateDescent(file_path)                
-                    
-            else:
-                raise ValueError("Formato de arquivo não suportado.")
-
-            for i in range(1, 101):
-                time.sleep(0.01)
-                progress_bar.progress(i)
-
-            
-
-            st.session_state.results = results
-            st.session_state.processing = False
-            st.rerun()
+                st.session_state.results = results
+                st.session_state.processing = False
+                st.rerun()
 
         except Exception as e:
             st.error(f"Erro ao processar o arquivo: {str(e)}")
@@ -161,7 +158,6 @@ def results_page() -> None:
         st.session_state.clear()
         st.session_state.page = "main"
         st.rerun()
-
 
 # Inicializa o estado da sessão
 if "page" not in st.session_state:
