@@ -13,7 +13,9 @@ class HighsSolver:
     def __init__(self, instance_path):
         self.instance_path = instance_path
         self.model = Highs()
+        self.log_file = f'{instance_path.split('/')[-1].split('.')[0]}.log'
         self.model.setOptionValue("solver", "ipm")
+        self.model.setOptionValue("log_file", self.log_file)
         self.res = None
 
     # Recebe o caminho para o arquivo MPS, lê o arquivo, executa o solver e armazena o resultado
@@ -29,6 +31,7 @@ class HighsSolver:
             self.start_time = pc()
             self.model.run()
             self.res = self.model.getSolution()
+            self.log_file = open(self.log_file, 'r', encoding='utf-8').read()
         
         except Exception as e:
             logging.error(f"Erro na execução do solver: {e}")
@@ -86,11 +89,17 @@ class HighsSolver:
             primal_value = self.model.getObjectiveValue() if status == hs.HighsModelStatus.kOptimal else None
             
             # Cálculo do valor dual e gap
-            dual_value = None
-            gap = None
+            dual = self.log_file.split('*')[-1].split()[3]
+            base, ex = dual.split('e')
+            dual_value = float(base)*10**int(ex)
+            abs_gap = primal_value - dual_value
+            rel_gap = self.log_file.split('Relative P-D gap')[-1].strip().split(':')[1].split('\n')[0].strip()
+            primal_infeasibility = self.log_file.split('primal infeasibility:')[-1].split('\n')[0].strip()
+            dual_infeasibility = self.log_file.split('dual infeasibility:')[-1].split('\n')[0].strip()
+            
             if status == hs.HighsModelStatus.kOptimal:
                 solution = self.model.getSolution()
-                dual_vars = solution.row_dual
+                #dual_vars = solution.row_dual
                 
                 lp_model = self.model.getLp()
                 row_lower = lp_model.row_lower_
@@ -105,9 +114,6 @@ class HighsSolver:
                         b.append(row_upper[i])
                     else:
                         b.append(row_lower[i])
-                
-                dual_value = np.dot(b, dual_vars)
-                gap = primal_value - dual_value if (primal_value is not None and dual_value is not None) else None
                 
                 var_names = lp_model.col_names_
                 restr_names = lp_model.row_names_  
@@ -132,9 +138,10 @@ class HighsSolver:
                 "STATUS": status_str,
                 "VALOR ÓTIMO PRIMAL": f"{primal_value:e}" if primal_value is not None else "N/A",
                 "VALOR ÓTIMO DUAL": f"{dual_value:e}" if dual_value is not None else "N/A",
-                "GAP": f"{gap:e}" if gap is not None else "N/A",
-                "INVIABILIDADE PRIMAL": f"{info.sum_primal_infeasibilities:e}",
-                "INVIABILIDADE DUAL": f"{info.sum_dual_infeasibilities:e}",
+                "GAP ABSOLUTO": f"{abs_gap:e}" if abs_gap is not None else "N/A",
+                "GAP RELATIVO": f"{rel_gap}" if rel_gap is not None else "N/A",
+                "INVIABILIDADE PRIMAL": f"{primal_infeasibility}",
+                "INVIABILIDADE DUAL": f"{dual_infeasibility}",
                 "ITERAÇÕES": info.ipm_iteration_count,
                 "TEMPO(SEG.)": pc() - self.start_time,
                 "Df1": df1.set_index('VAR.'),
