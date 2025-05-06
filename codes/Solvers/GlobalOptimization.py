@@ -36,6 +36,7 @@ class GlobalOptimization:
         self.constraints = constraints if constraints is not None else {}
         self.default_method = default_method
         self.result = None
+        self.expectd_result = 0
 
 
 

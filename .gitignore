@@ -6,10 +6,10 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
+*.npz
 pip-log.txt
 pip-delete-this-directory.txt
-
+instances_lsq_linear
 .git/
 
 testes.ipynb

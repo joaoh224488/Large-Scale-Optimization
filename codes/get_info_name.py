@@ -25,5 +25,7 @@ def extract_size_tolerance(filename):
 if __name__ == "__main__":
     filename = "2000_1e-3_1.txt"
     size, tolerance = extract_size_tolerance(filename)
-    print(f"Size: {size}")
-    print(f"Tolerance: {tolerance}")
+    size, tolerance = float(size), float(tolerance)
+    print(f"Size: {size}",type(size))
+    print(f"Tolerance: {tolerance}",type(tolerance),)
+

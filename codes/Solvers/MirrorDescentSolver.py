@@ -4,6 +4,7 @@ import pandas as pd
 from time import perf_counter as pc
 from scipy.sparse import coo_matrix
 from typing import Tuple
+from codes.instance_reader import read_instance
 
 
 class MirrorDescentSolver:
@@ -32,7 +33,7 @@ class MirrorDescentSolver:
             return match.group(1).strip()
 
         padroes = {
-            'row': r'matriz\.row : \n(.*?)(?=\nmatriz\.col :)',
+            'row': r"matriz\.row : \n(.*?)(?=\nmatriz\.col :)",
             'col': r'matriz\.col : \n(.*?)(?=\nmatriz\.Data :)',
             'data': r'matriz\.Data : \n(.*?)(?=Vector b :)',
             'b': r'Vector b : (.*?)(?=X_star :)',
