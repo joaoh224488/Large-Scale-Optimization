@@ -4,8 +4,8 @@ import tempfile
 import streamlit as st
 
 from typing import Optional, Dict, Any
-from codes.Solvers.HighsSolver import HighsSolver
-from codes.Solvers.MirrorDescentSolver import MirrorDescentSolver  # importe seu novo solver aqui
+from codes.Solvers.Highs import HighsSolver
+from codes.Solvers.MirrorDescent import MirrorDescentSolver  # importe seu novo solver aqui
 
 
 def cleanup_temp_file(file_path: Optional[str]) -> None:
@@ -20,7 +20,26 @@ def main_page() -> None:
     st.set_page_config(page_title="Solver de PL", layout="centered")
     st.title("Solver de Problemas de Otimização")
 
-    uploaded_file = st.file_uploader("Escolha um arquivo", type=["mps", "txt"])
+    st.session_state.function_type = st.selectbox(
+        "Selecione o tipo de função",
+        ["Linear", "Quadrática"]
+    )
+
+    type_arq = ''
+    methods = []
+    if st.session_state.function_type == "Linear":
+        type_arq = 'mps'
+        methods = ["HiGHS"]
+    else:
+        type_arq = 'txt'
+        methods = ["Descida por Coordenada", "Gradiente Espelhado"]
+    
+    st.session_state.method_selected = st.selectbox(
+        "Selecione o método de otimização",
+        methods
+    )
+
+    uploaded_file = st.file_uploader("Escolha um arquivo", type=type_arq)
 
     if uploaded_file is not None:
         original_filename = uploaded_file.name
@@ -121,7 +140,7 @@ def results_page() -> None:
         if results:
             display_results(results)
         else:
-            st.error("Erro ao aljkshgdlahsgdlahsdg o problema.")
+            st.error("Erro ao resolver o problema.")
 
     if st.button("Voltar para o início"):
         cleanup_temp_file(file_path)
