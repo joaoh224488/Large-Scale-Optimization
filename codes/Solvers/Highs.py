@@ -13,7 +13,7 @@ class HighsSolver:
     def __init__(self, instance_path):
         self.instance_path = instance_path
         self.model = Highs()
-        self.log_file = f'{instance_path.split("/")[-1].split(".")[0]}.log'
+        self.log_file = f'logs/{instance_path.split("/")[-1].split(".")[0]}.log'
         self.model.setOptionValue("solver", "ipm")
         self.model.setOptionValue("log_file", self.log_file)
         self.res = None
