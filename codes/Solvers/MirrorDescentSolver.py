@@ -7,11 +7,12 @@ from typing import Tuple
 
 
 class MirrorDescentSolver:
-    def __init__(self, instance_path: str, eta=1e-1, epsilon=1e-5, max_iter=100000):
+    def __init__(self, instance_path: str, eta=1e-1, epsilon=1e-5, max_iter=100000, versao="norma_p"):
         self.instance_path = instance_path
         self.eta = eta
         self.epsilon = epsilon
         self.max_iter = max_iter
+        self.versao = versao
 
         self.A = None
         self.b = None
@@ -85,18 +86,23 @@ class MirrorDescentSolver:
     def f(self, x:np.array):
         return (1/2) * np.linalg.norm(self.A @ x - self.b)**2
 
-    def mirror_gradient(self, x0, verbose=True):
+    def mirror_gradient(self, x0, verbose=False, versao="norma_p"):
         xt = x0.copy()
 
         for i in range(self.max_iter):
             grad_f = self._grad_f(xt)
-
+        
             if np.linalg.norm(grad_f) <= self.epsilon:
                 break
 
-            x_new = self._inv_grad_norma_p(
-                self._grad_norma_p(xt) - self.eta * grad_f
-            )
+            if versao == "negativa_entropia":
+                x_new = self._inv_grad_negativa_entropia(
+                    self._grad_negativa_entropia(xt) - self.eta * grad_f
+                )
+            elif versao == "norma_p":
+                x_new = self._inv_grad_norma_p(
+                    self._grad_norma_p(xt) - self.eta * grad_f
+                )
 
             if np.linalg.norm(x_new - xt) < self.epsilon:
                 break
@@ -113,7 +119,7 @@ class MirrorDescentSolver:
             x0 = np.ones_like(self.b)
 
             start = pc()
-            self.solution = self.mirror_gradient(x0)
+            self.solution = self.mirror_gradient(x0, versao=self.versao)
             self.time_taken = pc() - start
         except Exception as e:
             print(f"Erro durante a execução: {e}")
@@ -123,6 +129,7 @@ class MirrorDescentSolver:
         if self.solution is None:
             return None
         try:
+            grad_norm = np.linalg.norm(self._grad_f(self.solution))
             obj_val = self.f(self.solution)
             erro = 100 * (obj_val - self.solution_cost) / (self.solution_cost) 
             df = pd.DataFrame({
@@ -132,7 +139,8 @@ class MirrorDescentSolver:
                 'ERRO': np.abs(self.solution - self.x_star)
             }).set_index('VAR')
 
-            return {
+            return { 
+                "NORMA DO GRADIENTE": grad_norm,
                 "CUSTO OBJETIVO CALCULADO": obj_val,
                 "CUSTO OBJETIVO ESPERADO": self.solution_cost,
                 "GAP COM RELAÇÃO AO OTIMO": erro,

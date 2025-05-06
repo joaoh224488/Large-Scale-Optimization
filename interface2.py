@@ -65,6 +65,7 @@ def display_results(results: Dict[str, Any]) -> None:
         st.table(results['Df2'])
     else:
         # Exibir resultados do MirrorDescentSolver
+        st.write(f"**NORMA DO GRADIENTE:** {results['NORMA DO GRADIENTE']}")
         st.write(f"**CUSTO OBJETIVO CALCULADO:** {results['CUSTO OBJETIVO CALCULADO']}")
         st.write(f"**CUSTO OBJETIVO ESPERADO:** {results['CUSTO OBJETIVO ESPERADO']}")
         st.write(f"**GAP COM RELAÇÃO AO OTIMO:** {results['GAP COM RELAÇÃO AO OTIMO']}")
@@ -78,8 +79,7 @@ def results_page() -> None:
     st.title("Resultados da Otimização")
 
     file_path = st.session_state.get("file_path")
-    file_ext = st.session_state.get("file_ext")
-
+    
     if not file_path:
         st.error("Nenhum arquivo foi enviado.")
         if st.button("Voltar para o início"):
@@ -92,24 +92,52 @@ def results_page() -> None:
             st.write("Processando a otimização...")
             progress_bar = st.progress(0)
 
-            # Escolhe o solver com base na extensão
-            if file_ext == ".mps":
-                solver = HighsSolver(file_path)
-            elif file_ext == ".txt":
-                solver = MirrorDescentSolver(file_path, max_iter=10000)
-            else:
-                raise ValueError("Formato de arquivo não suportado.")
+            # Seleção do solver independentemente da extensão do arquivo
+            solver_type = st.selectbox(
+                "Selecione o solver para otimização",
+                ["HighsSolver", "MirrorDescentSolver"],
+                key="solver_selection"
+            )
 
-            for i in range(1, 101):
-                time.sleep(0.01)
-                progress_bar.progress(i)
+            # Configurações específicas para MirrorDescentSolver
+            if solver_type == "MirrorDescentSolver":
+                versao = st.selectbox(
+                    "Escolha a versão do Mirror Descent",
+                    ["negativa_entropia", "norma_p"],
+                    key="mirror_version"
+                )
+                max_iter = st.number_input(
+                    "Número máximo de iterações",
+                    min_value=100,
+                    max_value=100000,
+                    value=10000,
+                    key="max_iter"
+                )
 
-            solver.run()
-            results = solver.get_results()
+            # Botão para confirmar e iniciar a otimização
+            if st.button("Iniciar Otimização"):
+                if solver_type == "HighsSolver":
+                    solver = HighsSolver(file_path)
+                elif solver_type == "MirrorDescentSolver":
+                    solver = MirrorDescentSolver(
+                        file_path,
+                        max_iter=max_iter,
+                        versao=versao
+                    )
+                else:
+                    raise ValueError("Solver não suportado.")
 
-            st.session_state.results = results
-            st.session_state.processing = False
-            st.rerun()
+                # Simulação de progresso
+                for i in range(1, 101):
+                    time.sleep(0.01)
+                    progress_bar.progress(i)
+
+                solver.run()
+                results = solver.get_results()
+
+                st.session_state.results = results
+                st.session_state.processing = False
+                st.rerun()
 
         except Exception as e:
             st.error(f"Erro ao processar o arquivo: {str(e)}")
@@ -128,8 +156,7 @@ def results_page() -> None:
         st.session_state.clear()
         st.session_state.page = "main"
         st.rerun()
-
-
+        
 # Inicializa o estado da sessão
 if "page" not in st.session_state:
     st.session_state.page = "main"
