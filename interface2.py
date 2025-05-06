@@ -99,6 +99,8 @@ def results_page() -> None:
                 key="solver_selection"
             )
 
+
+
             # Configurações específicas para MirrorDescentSolver
             if solver_type == "MirrorDescentSolver":
                 versao = st.selectbox(
@@ -156,7 +158,7 @@ def results_page() -> None:
         st.session_state.clear()
         st.session_state.page = "main"
         st.rerun()
-        
+
 # Inicializa o estado da sessão
 if "page" not in st.session_state:
     st.session_state.page = "main"
