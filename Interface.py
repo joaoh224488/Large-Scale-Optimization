@@ -6,6 +6,7 @@ import streamlit as st
 from typing import Optional, Dict, Any
 from codes.Solvers.Highs import HighsSolver
 from codes.Solvers.MirrorDescent import MirrorDescentSolver  # importe seu novo solver aqui
+from codes.solver.DescendingByCoordinate import CoordinateDescent
 
 
 def cleanup_temp_file(file_path: Optional[str]) -> None:
@@ -111,11 +112,19 @@ def results_page() -> None:
             st.write("Processando a otimização...")
             progress_bar = st.progress(0)
 
+            # "Descida por Coordenada", "Gradiente Espelhado"
             # Escolhe o solver com base na extensão
-            if file_ext == ".mps":
+            if file_ext == ".mps":                
                 solver = HighsSolver(file_path)
             elif file_ext == ".txt":
-                solver = MirrorDescentSolver(file_path, max_iter=100)
+                if st.session_state.method_selected == "Gradiente Espelhado":
+                
+                    solver = MirrorDescentSolver(file_path, max_iter=100)
+
+                if st.session_state.method_selected == "Descida por Coordenada":
+
+                    solver = CoordinateDescent(input_file)                
+                    
             else:
                 raise ValueError("Formato de arquivo não suportado.")
 
