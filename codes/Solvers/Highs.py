@@ -118,17 +118,21 @@ class HighsSolver:
                 var_names = lp_model.col_names_
                 restr_names = lp_model.row_names_  
 
-                table1_data = {'VAR.': var_names,
-                            'SOL. PRIMAL': solution.col_value,
-                            'DUAL_PRICES': solution.col_dual # Custos reduzidos (associados às variáveis)
-                            }
+                table1_data = {'VAR. NAME': var_names,
+                               'SOL. PRIMAL': solution.col_value,
+                               'RESIDUAL': solution.col_dual
+                               }
                 df1 = pd.DataFrame(table1_data)  
+                df1.index.name = 'VAR. NUMBER'
+                df1 = df1[(df1['SOL. PRIMAL'] != 0) | (df1['RESIDUAL'] != 0)]
             
-                table2_data = {'RESTR.': restr_names,
-                        'FOLGAS': solution.row_value,
-                        'SOL. DUAL': solution.row_dual # Custos reduzidos (associados às variáveis)
-                        }
+                table2_data = {'RESTR. NAME': restr_names,
+                               'FOLGAS': solution.row_value,
+                               'SOL. DUAL': solution.row_dual
+                               }
                 df2 = pd.DataFrame(table2_data)
+                df2.index.name = 'RESTR. NUMBER'
+                df2 = df2[(df2['FOLGAS'] != 0) | (df2['SOL. DUAL'] != 0)]
                 
                 # Métricas de inviabilidade
                 info = self.model.getInfo()
@@ -144,8 +148,8 @@ class HighsSolver:
                 "INVIABILIDADE DUAL": f"{dual_infeasibility}",
                 "ITERAÇÕES": info.ipm_iteration_count,
                 "TEMPO(SEG.)": pc() - self.start_time,
-                "Df1": df1.set_index('VAR.'),
-                "Df2": df2.set_index('RESTR.')
+                "Df1": df1,
+                "Df2": df2
                 }
         except Exception as e:
             logging.error(f"Erro ao obter resultados: {e}")
